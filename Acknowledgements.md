@@ -9,6 +9,7 @@ R01-HD091527
 K99-HD096112
 
 Special thanks go out to the following individuals:
+
 **Database Construction**
 Ryan Roper
 Cory Funk
@@ -18,7 +19,7 @@ Paul Shannon
 **Sample Collection Processing and Data Generation**
 Theo Bammler
 James Macdonald
-Yeon Mi 
+Yeon Mi Hwang
 Jocelynn Pearl
 Hanna Liao
 Heather Brockway
@@ -31,8 +32,7 @@ Leslie Myatt
 John Stamatoyannopoulos
 Helen Jones
 Louis Muglia
-Sheela Sathayaneera
+Sheela Sathyanarayana
 Nathan Price
-
 
 We would also like to thank all participants who donated their samples, as well as individuals who helped with recruitment, processing, and sample collection.  This work would not have been possible without your support! 
