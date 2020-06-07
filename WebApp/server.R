@@ -313,7 +313,8 @@ shinyServer(function(input, output) {
         # Data table options
         dt_options <- list(pageLength = 10,
                            lengthMenu = list(c(-1, 10, 20, 50, 100), c('All', '10', '20', '50', '100')),
-                           searching = TRUE)
+                           searching = TRUE,
+                           language = list(search = "Search results for target gene:"))
 
         # Get data for display
         tf_data <- tf_filtered_results()
