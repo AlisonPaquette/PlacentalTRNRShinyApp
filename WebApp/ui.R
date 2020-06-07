@@ -38,7 +38,7 @@ shinyUI(fluidPage(
 
             # Select which filter options to use (if any)
             checkboxGroupInput("gene_filter_by", label = "Filter by:",
-                               choices = dt_column_labels[-(1:2)], inline = TRUE),
+                               choices = dt_column_labels[-c(1:2, 6)], inline = TRUE),
 
             # Filter by Correlation
             conditionalPanel(
@@ -56,12 +56,6 @@ shinyUI(fluidPage(
             conditionalPanel(
                 condition = sprintf( "input.gene_filter_by.includes(\'%s\')", dt_column_labels[5] ),
                 uiOutput("gene_filter_by_qvalue")
-            ),
-
-            # Filter by R2-value
-            conditionalPanel(
-                condition = sprintf( "input.gene_filter_by.includes(\'%s\')", dt_column_labels[6] ),
-                uiOutput("gene_filter_by_r2value")
             ),
 
             tags$hr(),
@@ -93,7 +87,13 @@ shinyUI(fluidPage(
 
             # Select which filter options to use (if any)
             checkboxGroupInput("tf_filter_by", label = "Filter by:",
-                               choices = dt_column_labels[-(1:2)], inline = TRUE),
+                               choiceNames = list(
+                                 dt_column_labels[3],
+                                 dt_column_labels[4],
+                                 dt_column_labels[5],
+                                 HTML("R<sup>2</sup>")),
+                               choiceValues = dt_column_labels[-(1:2)],
+                               inline = TRUE),
 
             # Filter by Correlation
             conditionalPanel(

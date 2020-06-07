@@ -33,13 +33,20 @@ shinyServer(function(input, output) {
         data <- left_join(data, rsquared, by = 'targetGene')
         
         # Now get just the desired columns
-        data <- data[, df_column_order]
+        data[, df_column_order]
     })
     
     # Get gene names (unique)
     gene_choices <- reactive({
         data <- file_data()
         levels(factor(data$targetGene))
+    })
+
+    # Get R2 value for gene association results
+    gene_r2 <- reactive({
+        data <- file_data()
+        data <- group_by(data, targetGene)
+        summarise(data, r2 = round(min(RSquared), digits = 3))
     })
 
     # Get TF names (unique)
@@ -84,17 +91,17 @@ shinyServer(function(input, output) {
             gene_data <- filter(gene_data, Q <= 10^input$gene_q_value)
         }
         
-        # Filter by R-squared value (if selected)
-        if( dt_column_labels[6] %in% input$gene_filter_by ) {
-            gene_data <- filter(gene_data, RSquared >= input$gene_r2_value)
-        }
-        
-        return(gene_data[df_column_order[-1]])
+        return(gene_data[df_column_order[-c(1, 6)]])
     })
 
     # Selection input if specifying gene
     output$gene_choice_input <- renderUI({
-        selectInput("gene_choice", label = "Select Gene:", gene_choices())
+        div(
+          tags$b("Gene Selection:"),
+          tags$br(),
+            tags$em("Type in a target gene or scroll to find and select"),
+            selectInput("gene_choice", label = NULL, gene_choices())
+        )
     })
     
     # Filter by Correlation
@@ -144,36 +151,22 @@ shinyServer(function(input, output) {
         )
     })
     
-    # Filter by R2-value
-    output$gene_filter_by_r2value <- renderUI({
-        div(
-            tags$hr(),
-            
-            # Used to specify a minimum R-squared cutoff
-            sliderInput("gene_r2_value", "R-squared", min = 0, max = 1,
-                        value = 0, step = 0.1, ticks = TRUE),
-            
-            # Explains what the R-squared filtering option does
-            tags$em("Keep results for which the R-squared value is greater than or equal to this value")
-        )
-    })
-    
     # Data table shows filtered results
     output$gene_results_table <- DT::renderDataTable({
         # Data table options
-        dt_options <- list(pageLength = 10, 
-                           lengthMenu = list(c(-1, 10, 20, 50, 100), c('All', '10', '20', '50', '100')),
-                           searching = TRUE)
+        dt_options <- list(paging = FALSE, searching = FALSE)
         
         # Get data for display
         gene_data <- gene_filtered_results()
-        
+
         # Display if there is data available
         if( !is.null(gene_data) ){
             
-            # Format the table and display
+            # Format the table and displays
             gene_data <- format(gene_data, digit = 3)
-            DT::datatable(gene_data, options = dt_options, colnames = dt_column_labels[-1])
+            DT::datatable(gene_data, options = dt_options, colnames = dt_column_labels[-c(1, 6)],
+                          caption = HTML(paste('<b>R<sup>2</sup> value:</b> ',
+                                               filter(gene_r2(), targetGene == input$gene_choice)$r2)))
         }
         
     })
@@ -204,7 +197,7 @@ shinyServer(function(input, output) {
         tf_data <- file_data()
 
         # Get TF choice and return if NULL
-        tf_choice <- input$tf_choice
+        tf_choice <- req(input$tf_choice)
         if( is.null(tf_choice) ) return(NULL)
 
         tf_data <- filter(tf_data, TF == tf_choice)
@@ -212,30 +205,33 @@ shinyServer(function(input, output) {
         # Filter by correlation value range (if selected)
         if( dt_column_labels[3] %in% input$tf_filter_by ) {
 
+            # Get low and high cutoffs for correlation filter
+            tf_corr <- req(input$tf_corr)
+
             # Filter for correlation values inside specified range
             if( input$tf_range_type == range_type_options[1] ){
-                tf_data <- filter(tf_data, (Cor >= input$tf_corr[1]) & (Cor <= input$tf_corr[2]))
+                tf_data <- filter(tf_data, (Cor >= tf_corr[1]) & (Cor <= tf_corr[2]))
             }
 
             # Filter for values outside specified range
             if(input$tf_range_type == range_type_options[2]) {
-                tf_data <- filter(tf_data, (Cor <= input$tf_corr[1]) | (Cor >= input$tf_corr[2]))
+                tf_data <- filter(tf_data, (Cor <= tf_corr[1]) | (Cor >= tf_corr[2]))
             }
         }
 
         # Filter by P-value (if selected)
         if( dt_column_labels[4] %in% input$tf_filter_by ) {
-            tf_data <- filter(tf_data, P <= 10^input$tf_p_value)
+            tf_data <- filter(tf_data, P <= 10^req(input$tf_p_value))
         }
 
         # Filter by Q-value (if selected)
         if( dt_column_labels[5] %in% input$tf_filter_by ) {
-            tf_data <- filter(tf_data, Q <= 10^input$tf_q_value)
+            tf_data <- filter(tf_data, Q <= 10^req(input$tf_q_value))
         }
 
         # Filter by R-squared value (if selected)
         if( dt_column_labels[6] %in% input$tf_filter_by ) {
-            tf_data <- filter(tf_data, RSquared >= input$tf_r2_value)
+            tf_data <- filter(tf_data, RSquared >= req(input$tf_r2_value))
         }
 
         return(tf_data[df_column_order[-2]])
@@ -243,7 +239,12 @@ shinyServer(function(input, output) {
 
     # Selection input if specifying gene
     output$tf_choice_input <- renderUI({
-        selectInput("tf_choice", label = "Select TF:", tf_choices())
+        div(
+            tags$b("Transcription Factor Selection:"),
+            tags$br(),
+            tags$em("Type in a TF or scroll to find and select"),
+            selectInput("tf_choice", label = NULL, tf_choices())
+        )
     })
 
     # Filter by Correlation
@@ -299,11 +300,11 @@ shinyServer(function(input, output) {
             tags$hr(),
 
             # Used to specify a minimum R-squared cutoff
-            sliderInput("tf_r2_value", "R-squared", min = 0, max = 1,
+            sliderInput("tf_r2_value", HTML("R<sup>2</sup> value"), min = 0, max = 1,
                         value = 0, step = 0.1, ticks = TRUE),
 
             # Explains what the R-squared filtering option does
-            tags$em("Keep results for which the R-squared value is greater than or equal to this value")
+            HTML("<em>Keep results for which R<sup>2</sup> is greater than or equal to this value</em>")
         )
     })
 
@@ -322,7 +323,12 @@ shinyServer(function(input, output) {
 
             # Format the table and display
             tf_data <- format(tf_data, digit = 3)
-            DT::datatable(tf_data, options = dt_options, colnames = dt_column_labels[-2])
+            DT::datatable(tf_data, options = dt_options,
+                          colnames = list(dt_column_labels[1],
+                                          dt_column_labels[3],
+                                          dt_column_labels[4],
+                                          dt_column_labels[5],
+                                          HTML("R<sup>2</sup>")))
         }
 
     })
