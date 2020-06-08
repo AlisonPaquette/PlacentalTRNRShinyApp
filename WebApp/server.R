@@ -316,8 +316,8 @@ shinyServer(function(input, output) {
                            searching = TRUE,
                            language = list(search = "Search results for target gene:"))
 
-        # Get data for display
-        tf_data <- tf_filtered_results()
+        # Get data for display (order by Q in ascending order)
+        tf_data <- tf_filtered_results() %>% arrange(Q)
 
         # Display if there is data available
         if( !is.null(tf_data) ){
