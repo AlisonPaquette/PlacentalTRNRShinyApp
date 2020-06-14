@@ -1,8 +1,8 @@
 
 ###### Load Data ##############
 ##Load Model (Pulled from what should work out of github)
-setwd("~/Documents/GitHub/PlacentalTRN/WebApp")
-file_name <- "Data/Placental_Gene_TF_Associations.csv"
+#setwd("~/Documents/GitHub/PlacentalTRN/WebApp")
+file_name <- "WebApp/Data/Placental_Gene_TF_Associations.csv"
 data <- read.csv(file_name)
 
 # Load TF/gene association data (assumes file is in same location as server.R)
@@ -10,11 +10,11 @@ data <- read.csv(file_name)
 #file_data <- reactive({
 
   # TF/Gene association data
-  file_name <- "Data/Placental_Gene_TF_Associations.csv"
+  file_name <- "WebApp/Data/Placental_Gene_TF_Associations.csv"
   data <- read.csv(file_name)
 
   # Target gene R-squared data
-  file_name <- "Data/Target_Gene_Rsquared.csv"
+  file_name <- "WebApp/Data/Target_Gene_Rsquared.csv"
   rsquared <- read.csv(file_name)
 
   # Left-join TF/Gene association data with R-squared data
@@ -26,11 +26,11 @@ data <- read.csv(file_name)
   #load("/Users/alisonpaquette/Dropbox/PlacentalTRNProject/Nov2019_ResultsforPaper/PTBAssocations/GeneLists/AggregatedMicroarraySig_BOR2017.RData")
 #Example1<-write.table(as.character(Microarray_sig$hgnc_symbol),file="/Users/alisonpaquette/Dropbox/PlacentalTRNProject/Nov2019_ResultsforPaper/PTBAssocations/GeneLists/Example1_MicroarrayData.txt")
 
-Example1<-read.table("/Users/alisonpaquette/Dropbox/PlacentalTRNProject/Nov2019_ResultsforPaper/PTBAssocations/GeneLists/Example1_MicroarrayData.txt")
+Example1<-read.table("Example1_MicroarrayData.txt")
 Example1<-as.character(Example1[,1])
 
 
-Example2<-read.table("/Users/alisonpaquette/Dropbox/PlacentalTRNProject/Nov2019_ResultsforPaper/PTBAssocations/GeneLists/Example2_RNASeqData.txt")
+Example2<-read.table("Example2_RNASeqData.txt")
 Example2<-as.character(Example2[,1])
 
 ###### Functions ##############################################################

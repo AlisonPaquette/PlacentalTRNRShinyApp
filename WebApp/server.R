@@ -35,7 +35,26 @@ shinyServer(function(input, output) {
         # Now get just the desired columns
         data[, df_column_order]
     })
-    
+
+    # Generate results of enrichment analysis
+    enrichment_results <- reactive({
+
+        req(input$file1)
+        req(input$module_min)
+        req(input$module_max)
+        req(input$min_significant)
+
+        # Get gene list for enrichment analysis
+        gene_list <- read.table(input$file1$datapath)
+
+        # Load gene and transcription factor data
+        data <- file_data()
+
+        # Generate enrichment results
+        TFTableFunction(data, gene_list$V1, input$module_min, input$module_max, input$min_significant)
+
+    })
+
     # Get gene names (unique)
     gene_choices <- reactive({
         data <- file_data()
@@ -151,7 +170,7 @@ shinyServer(function(input, output) {
         )
     })
     
-    # Data table shows filtered results
+    # Data table shows filtered results for a specified gene
     output$gene_results_table <- DT::renderDataTable({
         # Data table options
         dt_options <- list(paging = FALSE, searching = FALSE)
@@ -165,13 +184,13 @@ shinyServer(function(input, output) {
             # Format the table and displays
             gene_data <- format(gene_data, digit = 3)
             DT::datatable(gene_data, options = dt_options, colnames = dt_column_labels[-c(1, 6)],
-                          caption = HTML(paste('<b>R<sup>2</sup> value:</b> ',
+                          caption = HTML(paste0('<b>R<sup>2</sup> value:</b> ',
                                                filter(gene_r2(), targetGene == input$gene_choice)$r2)))
         }
         
     })
     
-    # Results download functionality
+    # Results download functionality (filtered results for a specified gene)
     output$gene_download <- downloadHandler(
         
         # Generate a default file name
@@ -181,7 +200,7 @@ shinyServer(function(input, output) {
             user_selection <- input$gene_choice
             
             # File name
-            paste("echo-data-", user_selection, "-", Sys.Date(), ".csv")
+            paste0("GeneSearch-", user_selection, "-", Sys.Date(), ".csv")
         },
         
         # Write filtered results out to file
@@ -234,7 +253,8 @@ shinyServer(function(input, output) {
             tf_data <- filter(tf_data, RSquared >= req(input$tf_r2_value))
         }
 
-        return(tf_data[df_column_order[-2]])
+        # Return results, dropping TF column and ordering by Q in ascending order)
+        return(tf_data[df_column_order[-2]] %>% arrange(Q))
     })
 
     # Selection input if specifying gene
@@ -308,7 +328,7 @@ shinyServer(function(input, output) {
         )
     })
 
-    # Data table shows filtered results
+    # Data table shows filtered results for a specified TF
     output$tf_results_table <- DT::renderDataTable({
         # Data table options
         dt_options <- list(pageLength = 10,
@@ -316,8 +336,8 @@ shinyServer(function(input, output) {
                            searching = TRUE,
                            language = list(search = "Search results for target gene:"))
 
-        # Get data for display (order by Q in ascending order)
-        tf_data <- tf_filtered_results() %>% arrange(Q)
+        # Get data for display
+        tf_data <- tf_filtered_results()
 
         # Display if there is data available
         if( !is.null(tf_data) ){
@@ -334,7 +354,7 @@ shinyServer(function(input, output) {
 
     })
 
-    # Results download functionality
+    # Results download functionality (filtered results for a specified TF)
     output$tf_download <- downloadHandler(
 
         # Generate a default file name
@@ -344,7 +364,7 @@ shinyServer(function(input, output) {
             user_selection <- input$tf_choice
 
             # File name
-            paste("echo-data-", user_selection, "-", Sys.Date(), ".csv")
+            paste0("TFSearch-", user_selection, "-", Sys.Date(), ".csv")
         },
 
         # Write filtered results out to file
@@ -353,5 +373,47 @@ shinyServer(function(input, output) {
         }
     )
 
-})
+    # Data table shows enrichment results
+    output$enrich_results_table <- DT::renderDataTable({
 
+        data <- enrichment_results()
+
+       # Data table options
+        dt_options <- list(pageLength = 10,
+                           lengthMenu = list(c(-1, 10, 20, 50, 100), c('All', '10', '20', '50', '100')),
+                           searching = TRUE,
+                           language = list(search = "Search results for transcription factor:"))
+
+        column_names <- list(dt_column_labels[2], "Num Targets",
+                            "Significant Genes", "Fisher Test", "Fisher Adj P-value")
+
+        # Display if there is data available
+        if( !is.null(data) ){
+
+            # Format the table and display
+            data <- format(data, digit = 3)
+            DT::datatable(data, options = dt_options, colnames = column_names)
+        }
+
+    })
+
+    # Enrichment results download functionality
+    output$enrich_download <- downloadHandler(
+
+        # Generate a default file name
+        filename = function() {
+
+            # Get input file name to use for output file name
+            input_file_root <- strsplit(input$file1$name, "\\.")[[1]]
+
+            # File name
+            paste0(input_file_root, "_EnrichResults_", Sys.Date(), ".csv")
+        },
+
+        # Write filtered results out to file
+        content = function(file) {
+            write.csv(enrichment_results(), file)
+        }
+    )
+
+})
