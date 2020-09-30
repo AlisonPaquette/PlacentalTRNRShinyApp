@@ -35,13 +35,13 @@ EnrichFisher <- function(NSigGenes, NTotalGenes, SigInGroup, GroupSize){
   if(GroupSize > NTotalGenes){
     stop("Group Size > Total Genes")
   }
-
-  a <- SigInGroup
-  b <- NSigGenes - SigInGroup
-  c <- GroupSize - SigInGroup
-  d <- NTotalGenes - b
+  a=SigInGroup ## Equivalent to X; Table 3. In the TFgroup and DE
+  b= GroupSize-SigInGroup #. Equivalent to m-X: In the TFGroup but NOT DE
+  c=NSigGenes-SigInGroup  # Equivalent to K-X; DE but not in the group
+  n=NTotalGenes-GroupSize #n in contigencyTable: not in group
+  d=n-c
   mat <- (matrix(c(a, b, c, d), nrow=2))
-  fisher.test(mat)$p.value
+  fisher.test(mat,,alternative="greater")$p.value
 }
 
 # Create Data frame and perform Fishers Exact Test
@@ -68,7 +68,7 @@ TFTableFunction <- function(data, gene.list, ModuleMin, ModuleMax, MinSigGenes){
   if(dim(TFTable)[1] < 1) return(TFTable)
 
   for(i in 1:length(TFTable$TF)){
-    TFTable$FisherTest[i] <- EnrichFisher(NSigGenes=as.numeric(length(gene.list)), NTotalGenes=9565,
+    TFTable$FisherTest[i] <- EnrichFisher(NSigGenes=as.numeric(length(gene.list)), NTotalGenes=7712,
                                           SigInGroup =TFTable$SigGenes[i], GroupSize=TFTable$NTargets[i])
   }
 
