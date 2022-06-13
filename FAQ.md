@@ -18,7 +18,7 @@ For our model, we will report a transcription factor regulates a target gene if 
   
   *It is important to note that since we only report on the top 15 TFs that regulate every gene.  Without this restriction, we would have a much larger network, and it would be challenging to interpret results and perform enrichment analysis. If you do not see a TF/target gene interaction that you would expect to see, please reach out and we can try to figure out what criteria was missing.*
   
-**Why are we building this model in the placenta? **
+**Why are we building this model in the placenta?**
 
 The placenta is a unique and ephemeral organ that is essential for fetal development and long term health. Despite its significance, the placenta remains one of the most understudied organs in the human body. This TRN is designed as a tool to contribute to our understanding of the human placenta, and aid other placental biology researchers.
 
