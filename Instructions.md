@@ -25,8 +25,12 @@ Column 2:Transcription Factor  | The TF you selected **to be deleted**
 Column 3:Correlation	Pearson correlation coefficient between the TF and Target Gene
 Column 4: P-Value | P value from Pearson correlation
 Column 5: Q Value | P value (From column 4) adjusted for multiple comparisons-i.e the total number of correlations made in the TRN (146,132) 
-Colum 6: | Overall accuracy of the model on predicting expression of the given target gene, using LASSO regression
+Column 6: | Overall accuracy of the model on predicting expression of the given target gene, using LASSO regression
 
 # Enrichment Tests
 
-**Coming Soon!**
+**Purpose:** This tool allows the user to examine what TFs are "enriched" for target genes of interest using an over-representation strategy. Statistical signifiance is calculated using one-sided fisher exact tests.
+
+**Instructions:** Upload an .txt file that contains a list of gene names (each a separate line). There are 2 examples in this github repository. Module minimum & Max represent the minimim and maximum size of target genes in individual TF modules to consider.  Min significant genes indicates the minimum number of genes in **YOUR** dataset with in a given TF module to include in analysis.  The table of results can be downloaded.
+
+
